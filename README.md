@@ -22,11 +22,11 @@ $ vault read -field=public_key ssh-client-signer/config/ca > trusted-user-ca-key
 $ vault write ssh-client-signer/roles/dev @vault/dev.json
 ````
 
-Now we're done with vault, let's create keys with `ssh-keygen` and put them in `~/.ssh/test`. Then sign them with the helper script `./sign.sh`.
+Now we're done with vault, let's create keys with `ssh-keygen` and put them in `~/.ssh/test`. Then sign them with the helper script `./sign.sh dev`.
 
 Start vagrant with `vagrant up`. The server will only allow logins with signed ssh keys. See `Vagrantfile` for details.
 
-Login with your signed keys. The signed keys are valid for 60 mins. Run `./sign.sh` to refresh them.
+Login with your signed keys. The signed keys are valid for 60 mins. Run `./sign.sh dev` to refresh them.
 
 ````bash
 $ ssh vagrant@127.0.0.1 -p 2222 -i ~/.ssh/test/id_rsa -i ~/.ssh/test/id_rsa-cert.pub -o StrictHostKeyChecking=no
@@ -34,6 +34,24 @@ $ ssh vagrant@127.0.0.1 -p 2222 -i ~/.ssh/test/id_rsa -i ~/.ssh/test/id_rsa-cert
 
 You can monitor and debug the sshd service with `sudo journalctl -u ssh -f`
 
+# cert expiration
+The cert expiration setting is handled by the fields `ttl` and `max_ttl` in the vault role specification. One would think allowed values would correspond to the ones under the -V flag for [ssh-keygen](https://man.openbsd.org/ssh-keygen.1#V) but that is not true. Vault deems these values invalid: always, forever, 0 (translates to 1 month), 19700101:20501212. The error message `error converting input forever for field "ttl": strconv.ParseInt: parsing "forever": invalid syntax` suggests only ints allowed but I suspect the parser is time.ParseDuration in go.
+
+````bash
+# create new role
+$ vault write ssh-client-signer/roles/nottl @vault/nottl.json
+# verify the contents of the role
+$ vault read ssh-client-signer/roles/nottl
+# sign the keys
+$ ./sign.sh nottl
+# verify login works
+$ ./check.sh
+# verify contents of cert
+$ ssh-keygen -L -f ~/.ssh/test/id_rsa-cert.pub
+````
+
 # todos
 - [x] prototype
+- [x] revert disallowing AuthorizedKeysFile
+- [x] tweak cert expiration date
 - [ ] verify that principal in cert is actually checked
