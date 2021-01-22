@@ -67,6 +67,14 @@ Create a ca that allows user certs with no expiration date (requires yolo/ca.pub
 $ ssh-keygen -C ca -f yolo/ca
 # sign the test keys
 $ ssh-keygen -s yolo/ca -I cf -n vagrant -V "always:forever" -z 1 ~/.ssh/test/id_rsa.pub
+$ ./check.sh
+````
+
+limit scope to single command
+
+````bash
+$ ssh-keygen -s yolo/ca -I cf -n vagrant -V "always:forever" -z 1 -O force-command='/vagrant/test.sh' ~/.ssh/test/id_rsa.pub
+$ ./check.sh
 ````
 
 # todos
@@ -75,4 +83,5 @@ $ ssh-keygen -s yolo/ca -I cf -n vagrant -V "always:forever" -z 1 ~/.ssh/test/id
 - [x] tweak cert expiration date
 - [ ] verify that principal in cert is actually checked
 - [x] verify cert start date
-- [ ] no expiry
+- [x] no expiry
+- [x] limit scope to single command
