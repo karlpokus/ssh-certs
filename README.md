@@ -4,6 +4,7 @@ This is a lab environment for ssh certificates. We'll use vault from hashicorp a
 # requirements
 - vault
 - vagrant
+- ssh-keygen
 
 # usage
 run vault with persistant storage on disk
@@ -59,9 +60,19 @@ $ vagrant reload
 $ sudo date -s '2000-01-01'
 ````
 
+Create a ca that allows user certs with no expiration date (requires yolo/ca.pub in trusted-user-ca-keys.pem on the host)
+
+````bash
+# create ca keys
+$ ssh-keygen -C ca -f yolo/ca
+# sign the test keys
+$ ssh-keygen -s yolo/ca -I cf -n vagrant -V "always:forever" -z 1 ~/.ssh/test/id_rsa.pub
+````
+
 # todos
 - [x] prototype
 - [x] revert disallowing AuthorizedKeysFile
 - [x] tweak cert expiration date
 - [ ] verify that principal in cert is actually checked
 - [x] verify cert start date
+- [ ] no expiry
