@@ -50,8 +50,18 @@ $ ./check.sh
 $ ssh-keygen -L -f ~/.ssh/test/id_rsa-cert.pub
 ````
 
+Verify that sshd checks expiration date properly.
+
+````bash
+# disable time synchronisation
+$ VBoxManage setextradata <vm_id> "VBoxInternal/Devices/VMMDev/0/Config/GetHostTimeDisabled" 1
+$ vagrant reload
+$ sudo date -s '2000-01-01'
+````
+
 # todos
 - [x] prototype
 - [x] revert disallowing AuthorizedKeysFile
 - [x] tweak cert expiration date
 - [ ] verify that principal in cert is actually checked
+- [x] verify cert start date
