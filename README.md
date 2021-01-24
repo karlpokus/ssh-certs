@@ -33,7 +33,7 @@ Login with your signed keys. The signed keys are valid for 60 mins. Run `./sign.
 $ ssh vagrant@127.0.0.1 -p 2222 -i ~/.ssh/test/id_rsa -i ~/.ssh/test/id_rsa-cert.pub -o StrictHostKeyChecking=no
 ````
 
-You can monitor and debug the sshd service with `sudo journalctl -u ssh -f`
+You can monitor and debug the sshd service with `sudo journalctl -u ssh -f` or even better `tail -f /var/log/auth.log`
 
 # cert expiration
 The cert expiration setting is handled by the fields `ttl` and `max_ttl` in the vault role specification. One would think allowed values would correspond to the ones under the -V flag for [ssh-keygen](https://man.openbsd.org/ssh-keygen.1#V) but that is not true. Vault deems these values invalid: always, forever, 0 (translates to 1 month), 19700101:20501212. The error message `error converting input forever for field "ttl": strconv.ParseInt: parsing "forever": invalid syntax` suggests only ints allowed but I suspect the parser is time.ParseDuration in go.
@@ -77,6 +77,14 @@ $ ssh-keygen -s yolo/ca -I cf -n vagrant -V "always:forever" -z 1 -O force-comma
 $ ./check.sh
 ````
 
+dynamic principals list
+
+````bash
+# sign keys
+$ ssh-keygen -s yolo/ca -I cf -n not-ubuntu -V "always:forever" -z 1 ~/.ssh/test/id_rsa.pub
+$ ./check.sh
+````
+
 # todos
 - [x] prototype
 - [x] revert disallowing AuthorizedKeysFile
@@ -85,3 +93,4 @@ $ ./check.sh
 - [x] verify cert start date
 - [x] no expiry
 - [x] limit scope to single command
+- [x] dynamic principals list
